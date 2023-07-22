@@ -1,4 +1,5 @@
 import numpy as np
+from utl.utilities import vehicle_body
 
 
 def simpleDynamics(self, massProperties):
@@ -87,24 +88,72 @@ def simpleDynamics(self, massProperties):
         gamma6 = Ixy/Iyy
         gamma7 = ((Ixx - Iyy)*Ixx) + Ixy**2
         gamma8 = Ixx/gamma
-
-        # Equation 3.15 in Small Unmanned Aircraft
+        
+        # Equation 3.15 in Small Unmanned Aircraft in Inertial Frame
         udot = r*v - q*w + (1/mass)*fx
         vdot = p*w - r*u + (1/mass)*fy
         wdot = q*u - p*v + (1/mass)*fz
 
+        # Equation 3.17 in Small Unmanned Aircraft in Body Frame
         pdot = gamma1*p*q - gamma2*q*r + gamma3*l + gamma4*n
-        qdot = gamma5*p*r - gamma6*(p**2 - r**2) + (1/Ixx)*mass
+        qdot = gamma5*p*r - gamma6*(p**2 - r**2) + (1/Ixx)*m
         rdot = gamma7*p*q - gamma1*q*r + gamma4*l + gamma8*n
 
-        # Propagate forward the dynamics 
-        u_new = u + udot*dt
-        v_new = v + vdot*dt
-        w_new = w + wdot*dt
+        # Equation 3.16 in Small Unmanned Aircraft producing Euler Angles from body frame rotation rates
+        phi_dot   = p + np.sin(phi)*np.tan(theta)*q + np.cos(phi)*np.tan(theta)*r
+        theta_dot = p*np.cos(phi) - r*np.sin(phi) 
+        psi_dot = (np.sin(phi)/np.cos(theta))*q + (np.cos(phi)/np.cos(theta))*r 
 
-        x_new = 
+        # Converting u,v,w body frame velocity to inertial frame
+        R_vehicle2body = vehicle_body(psi, theta, phi)
+        R_body2vehicle = np.transpose(R_vehicle2body)
+
+        pvel = R_body2vehicle @ np.array([u, v, w]) 
+
+        pveln = pvel[0]   # Velocity in the north direction 
+        pvele = pvel[1]   # Velocity in the east direction
+        pveld = pvel[2]   # Velocity in the down direction
+
+        # Propagate forward the dynamics
+        x_new = x + pveln*dt      # x expressed in inertial frame
+        y_new = y + pvele*dt      # y expressed in inertial frame
+        z_new = z + pveld*dt      # z expressed in inertial frame  
+
+        u_new = u + udot*dt   # u expressed in body frame    
+        v_new = v + vdot*dt   # v expressed in body frame
+        w_new = w + wdot*dt   # w expressed in body frame
+
+        phi_new = phi + phi_dot*dt        # phi expressed in the v2 frame
+        theta_new = theta + theta_dot*dt  # theta expressed in the v1
+        psi_new = psi + psi_dot*dt        # psi expressed in the v frame
+
+        p_new = p + pdot*dt   # p expressed in body frame
+        q_new = q + qdot*dt   # q expressed in body frame
+        r_new = r + rdot*dt   # r expressed in body frame
+
+
+        # Return state dictionary that contains updated states
+
+        updated_states = dict()
+        updated_states['x'] = x_new
+        updated_states['y'] = y_new
+        updated_states['z'] = z_new
+
+        updated_states['u'] = u_new
+        updated_states['v'] = v_new
+        updated_states['w'] = w_new
+
+        updated_states['phi'] = phi_new
+        updated_states['theta'] = theta_new
+        updated_states['psi'] = psi_new
+
+        updated_states['p'] = p_new
+        updated_states['q'] = q_new
+        updated_states['r'] = r_new
 
         
+        return updated_states
+
 
 
 
