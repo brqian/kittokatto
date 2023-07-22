@@ -113,6 +113,8 @@ def quaternion_2_dcm(q):
 
     Output:
         - direction cosine matrix corresponding the to the quaternion input
+
+    Reference: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
     '''
 
     if np.linalg.norm(q) > 1.0:
@@ -150,6 +152,8 @@ def euler_2_quaternion(roll, pitch, yaw):
             q = q(roll) * q(pitch) * q(yaw)
 
         - q has shape of (4,)
+
+    Reference: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
     '''
 
     q = np.zeros((4,))
@@ -160,6 +164,34 @@ def euler_2_quaternion(roll, pitch, yaw):
     q[3] = np.cos(roll/2)*np.cos(pitch/2)*np.sin(yaw/2) - np.sin(roll/2)*np.sin(pitch/2)*np.cos(yaw/2)
 
     return q
+
+def quaternion_2_euler(q):
+    '''
+    Inputs: 
+        - a quaternion of shape (4,) where the first entry is the scalar value for the quaternion
+
+    Outputs: 
+        phi   (roll) 
+        theta (pitch)
+        psi   (yaw)
+
+        Euler Angles
+
+    Reference: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    '''
+    phi_num = 2*(q[0]*q[1] + q[2]*q[3])
+    phi_den = 1 - 2*(q[1]**2 + q[2]**2)
+    phi = np.arctan2(phi_num, phi_den)
+
+    theta_num = np.sqrt(1 + 2*(q[0]*q[2] - q[1]*q[3]))
+    theta_den = np.sqrt(1 - 2*(q[0]*q[2] - q[1]*q[3]))
+    theta = -np.pi/2 + 2*np.arctan2(theta_num, theta_den)
+
+    psi_num = 2*(q[0]*q[3] + q[1]*q[2])
+    psi_den = 1 - 2*(q[2]**2 + q[3]**2)
+    psi = np.arctan2(psi_num/psi_den)
+
+    return phi, theta, psi 
 
 def quaternion_multiply(q1, q2):
     '''
