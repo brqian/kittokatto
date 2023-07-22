@@ -88,21 +88,35 @@ def simpleDynamics(self, massProperties):
         gamma7 = ((Ixx - Iyy)*Ixx) + Ixy**2
         gamma8 = Ixx/gamma
 
-        # Equation 3.15 in Small Unmanned Aircraft
+        # Equation 3.15 in Small Unmanned Aircraft in Inertial Frame
         udot = r*v - q*w + (1/mass)*fx
         vdot = p*w - r*u + (1/mass)*fy
         wdot = q*u - p*v + (1/mass)*fz
 
+        # Equation 3.17 in Small Unmanned Aircraft in Body Frame
         pdot = gamma1*p*q - gamma2*q*r + gamma3*l + gamma4*n
         qdot = gamma5*p*r - gamma6*(p**2 - r**2) + (1/Ixx)*mass
         rdot = gamma7*p*q - gamma1*q*r + gamma4*l + gamma8*n
 
-        # Propagate forward the dynamics 
+        # Equation 3.16 in Small Unmanned Aircraft producing Euler Angles from body frame rotation rates
+        phi_dot   = p + np.sin(phi)*np.tan(theta)*q + np.cos(phi)*np.tan(theta)*r
+        theta_dot = p*np.cos(phi) - r*np.sin(phi) 
+        psi_dot = (np.sin(phi)/np.cos(theta))*q + (np.cos(phi)/np.cos(theta))*r 
+
+        # Propagate forward the dynamics
         u_new = u + udot*dt
         v_new = v + vdot*dt
         w_new = w + wdot*dt
 
-        x_new = 
+        x_new = x + u*dt
+        y_new = y + v*dt
+        z_new = z + w*dt
+
+        phi_new = phi + phi_dot*dt
+        theta_new = theta + theta_dot*dt
+        psi_new = psi + psi_dot*dt
+
+
 
         
 
