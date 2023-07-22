@@ -1,6 +1,7 @@
 import numpy as np
 from utl.utilities import vehicle_body
 
+
 def simpleDynamics(self, massProperties):
     '''
     Upon initialization of this class, provide a dictionary of the Mass Properties for the quadcopter.
@@ -87,7 +88,7 @@ def simpleDynamics(self, massProperties):
         gamma6 = Ixy/Iyy
         gamma7 = ((Ixx - Iyy)*Ixx) + Ixy**2
         gamma8 = Ixx/gamma
-
+        
         # Equation 3.15 in Small Unmanned Aircraft in Inertial Frame
         udot = r*v - q*w + (1/mass)*fx
         vdot = p*w - r*u + (1/mass)*fy
@@ -152,6 +153,8 @@ def simpleDynamics(self, massProperties):
 
         
         return updated_states
+
+
 
 
 
