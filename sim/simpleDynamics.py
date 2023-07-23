@@ -1,5 +1,5 @@
 import numpy as np
-from utl.utilities import vehicle_body
+from utl.coordinate_transforms import vehicle_body
 
 
 def simpleDynamics(self, massProperties):
