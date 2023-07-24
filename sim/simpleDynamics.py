@@ -2,7 +2,7 @@ import numpy as np
 from utl.coordinate_transforms import vehicle_body
 
 
-def simpleDynamics(self, massProperties):
+class simpleDynamics():
     '''
     Upon initialization of this class, provide a dictionary of the Mass Properties for the quadcopter.
     massProperties['mass'] = 100   # KG
@@ -33,7 +33,7 @@ def simpleDynamics(self, massProperties):
         self.state_dict = dict()
      
 
-    def update_states(self, state : dict, forces, moments, dt):
+    def update_states(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt, cnt):
         '''
         Input:
         forces   (3x1) 
@@ -60,18 +60,18 @@ def simpleDynamics(self, massProperties):
         n = moments[2]
 
         # Unpacking states dictionary
-        x = state['x']
-        y = state['y']
-        z = state['z']
-        u = state['u']
-        v = state['v']
-        w = state['w']
-        phi   = state['phi']
-        theta = state['theta']
-        psi   = state['psi']
-        p = state['p']
-        q = state['q']
-        r = state['r']
+        x = state['x'][cnt]
+        y = state['y'][cnt]
+        z = state['z'][cnt]
+        u = state['u'][cnt]
+        v = state['v'][cnt]
+        w = state['w'][cnt]
+        phi   = state['phi'][cnt]
+        theta = state['theta'][cnt]
+        psi   = state['psi'][cnt]
+        p = state['p'][cnt]
+        q = state['q'][cnt]
+        r = state['r'][cnt]
 
         Ixx = MoI[0,0]
         Iyy = MoI[1,1]
@@ -133,26 +133,24 @@ def simpleDynamics(self, massProperties):
 
 
         # Return state dictionary that contains updated states
+        state['x'].append(x_new)
+        state['y'].append(y_new)
+        state['z'].append(z_new)
 
-        updated_states = dict()
-        updated_states['x'] = x_new
-        updated_states['y'] = y_new
-        updated_states['z'] = z_new
+        state['u'].append(u_new)
+        state['v'].append(v_new)
+        state['w'].append(w_new)
 
-        updated_states['u'] = u_new
-        updated_states['v'] = v_new
-        updated_states['w'] = w_new
+        state['phi'].append(phi_new)
+        state['theta'].append(theta_new)
+        state['psi'].append(psi_new)
 
-        updated_states['phi'] = phi_new
-        updated_states['theta'] = theta_new
-        updated_states['psi'] = psi_new
-
-        updated_states['p'] = p_new
-        updated_states['q'] = q_new
-        updated_states['r'] = r_new
+        state['p'].append(p_new)
+        state['q'].append(q_new)
+        state['r'].append(r_new)
 
         
-        return updated_states
+        return state
 
 
 

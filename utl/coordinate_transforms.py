@@ -18,8 +18,8 @@ def dcm_vehicle_vehicle1(psi):
     '''
     This corresponds the yaw maneuver
     '''
-    dcm = np.array([[np.cos(psi),  np.sin(psi), 0]
-                    [-np.sin(psi), np.cos(psi), 0]
+    dcm = np.array([[np.cos(psi),  np.sin(psi), 0],
+                    [-np.sin(psi), np.cos(psi), 0],
                     [0,            0,           1]])
     
     return dcm
@@ -28,8 +28,8 @@ def dcm_vehicle1_vehicle2(theta):
     '''
     This corresponds to the pitch maneuver
     '''
-    dcm = np.array([[np.cos(theta),  0, -np.sin(theta)]
-                    [0,              1,              0]
+    dcm = np.array([[np.cos(theta),  0, -np.sin(theta)],
+                    [0,              1,              0],
                     [np.sin(theta),  0,  np.cos(theta)]])
     
     return dcm    
@@ -38,8 +38,8 @@ def dcm_vehicle2_body(phi):
     '''
     This corresponds to the roll maneuver
     '''
-    dcm = np.array([[1,              0,              0]
-                    [0,    np.cos(phi),    np.sin(phi)]
+    dcm = np.array([[1,              0,              0],
+                    [0,    np.cos(phi),    np.sin(phi)],
                     [0,   -np.sin(phi),    np.cos(phi)]])
     
     return dcm        
@@ -52,6 +52,8 @@ def vehicle_body(psi, theta, phi):
 
     # Based on the psi-theta-phi rotation sequence
     dcm = dcm_v2_body @ dcm_v1_v2 @ dcm_v_v1
+
+    return dcm
 
 def dcm_2_quaternion(dcm):
     '''
