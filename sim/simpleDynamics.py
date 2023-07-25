@@ -28,12 +28,9 @@ class simpleDynamics():
         # Unpacking the initial conditions provided and setting them as attributes of the simpleDynamics class
         for key in massProperties:
             setattr(self, key, massProperties[key])
-        pass
+        pass     
 
-        self.state_dict = dict()
-     
-
-    def update_states(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt, cnt):
+    def compute_rates(self, state_dict : dict):
         '''
         Input:
         forces   (3x1) 
@@ -52,26 +49,26 @@ class simpleDynamics():
         MoI  = self.MomentsOfInertia  # 3x3 matrix
 
         # Setting forces and moments variables
-        fx = forces[0]
-        fy = forces[1]
-        fz = forces[2]
-        l = moments[0]
-        m = moments[1]
-        n = moments[2]
+        fx = self.forces[0]
+        fy = self.forces[1]
+        fz = self.forces[2]
+        l = self.moments[0]
+        m = self.moments[1]
+        n = self.moments[2]
 
         # Unpacking states dictionary
-        x = state['x'][cnt]
-        y = state['y'][cnt]
-        z = state['z'][cnt]
-        u = state['u'][cnt]
-        v = state['v'][cnt]
-        w = state['w'][cnt]
-        phi   = state['phi'][cnt]
-        theta = state['theta'][cnt]
-        psi   = state['psi'][cnt]
-        p = state['p'][cnt]
-        q = state['q'][cnt]
-        r = state['r'][cnt]
+        x = state_dict['x'][-1]
+        y = state_dict['y'][-1]
+        z = state_dict['z'][-1]
+        u = state_dict['u'][-1]
+        v = state_dict['v'][-1]
+        w = state_dict['w'][-1]
+        phi   = state_dict['phi'][-1]
+        theta = state_dict['theta'][-1]
+        psi   = state_dict['psi'][-1]
+        p = state_dict['p'][-1]
+        q = state_dict['q'][-1]
+        r = state_dict['r'][-1]
 
         Ixx = MoI[0,0]
         Iyy = MoI[1,1]
@@ -114,44 +111,75 @@ class simpleDynamics():
         pvele = pvel[1]   # Velocity in the east direction
         pveld = pvel[2]   # Velocity in the down direction
 
-        # Propagate forward the dynamics
-        x_new = x + pveln*dt      # x expressed in inertial frame
-        y_new = y + pvele*dt      # y expressed in inertial frame
-        z_new = z + pveld*dt      # z expressed in inertial frame  
-
-        u_new = u + udot*dt   # u expressed in body frame    
-        v_new = v + vdot*dt   # v expressed in body frame
-        w_new = w + wdot*dt   # w expressed in body frame
-
-        phi_new = phi + phi_dot*dt        # phi expressed in the v2 frame
-        theta_new = theta + theta_dot*dt  # theta expressed in the v1
-        psi_new = psi + psi_dot*dt        # psi expressed in the v frame
-
-        p_new = p + pdot*dt   # p expressed in body frame
-        q_new = q + qdot*dt   # q expressed in body frame
-        r_new = r + rdot*dt   # r expressed in body frame
-
-
-        # Return state dictionary that contains updated states
-        state['x'].append(x_new)
-        state['y'].append(y_new)
-        state['z'].append(z_new)
-
-        state['u'].append(u_new)
-        state['v'].append(v_new)
-        state['w'].append(w_new)
-
-        state['phi'].append(phi_new)
-        state['theta'].append(theta_new)
-        state['psi'].append(psi_new)
-
-        state['p'].append(p_new)
-        state['q'].append(q_new)
-        state['r'].append(r_new)
-
+        # Return a rate dictionary
+        rate_dict = dict()
+        rate_dict['x'] = pveln
+        rate_dict['y'] = pvele
+        rate_dict['z'] = pveld
+        rate_dict['u'] = udot
+        rate_dict['v'] = vdot
+        rate_dict['w'] = wdot
+        rate_dict['phi'] = phi_dot
+        rate_dict['theta'] = theta_dot
+        rate_dict['psi'] = psi_dot        
+        rate_dict['p'] = pdot
+        rate_dict['q'] = qdot
+        rate_dict['r'] = rdot
         
+        return rate_dict
+        
+    def propagate_dynamics(self, state_dict : dict, rate_dict : dict, dt):
+        
+        updated_states = dict()
+        
+        # Looping over state and rate dictionary and checking for matching keys
+        for (stateKey, stateVal), (rateKey, rateVal) in zip(state_dict.items(), rate_dict.items()):
+            if stateKey == rateKey:
+                updated_states[stateKey] = [float(stateVal[-1] + rateVal*dt)]
+
+        return updated_states
+
+
+    def forward_euler(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt):
+        
+        self.forces  = forces
+        self.moments = moments 
+
+        # Obtain the rates
+        rates = self.compute_rates(state)
+
+        # Propagate the dynamics
+        updated_states = self.propagate_dynamics(state, rates, dt)
+
+        # Looping over state and rate dictionary and checking for matching keys
+        for (stateKey, stateVal), (updatedKey, updatedVal) in zip(state.items(), updated_states.items()):
+            if stateKey == updatedKey:
+                state[stateKey].append(updatedVal[0])
+ 
         return state
 
+    def rk4(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt):
+        
+        self.forces  = forces
+        self.moments = moments 
+        
+        # Call to obtain rates 
+        k1rates = self.compute_rates(state)
+
+        k2states = self.propagate_dynamics(state, k1rates, dt/2)
+        k2rates  = self.compute_rates(k2states)
+
+        k3states = self.propagate_dynamics(state, k2rates, dt/2)
+        k3rates  = self.compute_rates(k3states)
+
+        k4rates  = self.propagate_dynamics(state, k3rates, dt)
+
+        # Compute next time step
+        for key in state.keys():
+            newVal = float(state[key][-1] + (dt/6)*(k1rates[key] + 2*k2rates[key] + 2*k3rates[key] + k4rates[key]))
+            state[key].append(newVal)
+
+        return state
 
 
 

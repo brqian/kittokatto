@@ -13,20 +13,35 @@ massProperties['MomentsOfInertia'] = momentOfInertiaMat
 
 simpleDyn = simpleDynamics(massProperties)
 
-# Initial Conditions
-state = dict()
-state['x'] = [0.0]
-state['y'] = [0.0]
-state['z'] = [0.0]
-state['u'] = [0.0]
-state['v'] = [0.0]
-state['w'] = [0.0]
-state['phi'] = [0.0]
-state['theta'] = [0.0]
-state['psi'] = [0.0]
-state['p'] = [0.0]
-state['q'] = [0.0]
-state['r'] = [0.0]
+# Initial Conditions for forward euler
+FE_state = dict()
+FE_state['x'] = [0.0]
+FE_state['y'] = [0.0]
+FE_state['z'] = [0.0]
+FE_state['u'] = [0.0]
+FE_state['v'] = [0.0]
+FE_state['w'] = [0.0]
+FE_state['phi'] = [0.0]
+FE_state['theta'] = [0.0]
+FE_state['psi'] = [0.0]
+FE_state['p'] = [0.0]
+FE_state['q'] = [0.0]
+FE_state['r'] = [0.0]
+
+# Initial Conditions for rk4
+rk4_state = dict()
+rk4_state['x'] = [0.0]
+rk4_state['y'] = [0.0]
+rk4_state['z'] = [0.0]
+rk4_state['u'] = [0.0]
+rk4_state['v'] = [0.0]
+rk4_state['w'] = [0.0]
+rk4_state['phi'] = [0.0]
+rk4_state['theta'] = [0.0]
+rk4_state['psi'] = [0.0]
+rk4_state['p'] = [0.0]
+rk4_state['q'] = [0.0]
+rk4_state['r'] = [0.0]
 
 # Forces
 forces = np.array([50, 50, 50])
@@ -46,13 +61,16 @@ for i in np.arange(time_start, time_end, dt):
 
     # Would call some analysis to sum up forces and moments 
 
-    # updating the state
-    state = simpleDyn.update_states(state, forces, moments, dt, cnt)
+    # updating the state using forward euler
+    FE_state = simpleDyn.forward_euler(FE_state, forces, moments, dt)
+
+    # updating the state using rk4
+    rk4_state = simpleDyn.rk4(rk4_state, forces, moments, dt)
 
     cnt = cnt + 1
 
 
-
+print('hi')
 
 
 
