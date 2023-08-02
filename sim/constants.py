@@ -29,3 +29,23 @@ def get_moment_of_inertia():
 def get_quadcopter_mass():
     copter_mass = 1.587 # [kg] Total mass 
     return copter_mass
+
+def get_thrust_coefficient():
+    thrust_coefficient = 3.7102e-5 # [Ns^2]
+    return thrust_coefficient
+
+def get_drag_coefficient():
+    drag_coefficient = 7.6933e-7 # [Nms^2]
+    return drag_coefficient
+
+def get_moment_arm():
+    moment_arm = 0.243 # [m]
+    return moment_arm
+
+def get_max_propeller_speed():
+    prop_max_speed = 494.27 # [rad/s]
+    return prop_max_speed
+
+def get_gravity():
+    gravity = 9.81 # [m/s2]
+    return gravity

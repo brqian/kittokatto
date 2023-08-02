@@ -49,12 +49,12 @@ class simpleDynamics():
         MoI  = self.MomentsOfInertia  # 3x3 matrix
 
         # Setting forces and moments variables
-        fx = self.forces[0]
-        fy = self.forces[1]
-        fz = self.forces[2]
-        l = self.moments[0]
-        m = self.moments[1]
-        n = self.moments[2]
+        fx = self.forces[self.cnt, 0]
+        fy = self.forces[self.cnt, 1]
+        fz = self.forces[self.cnt, 2]
+        l = self.moments[self.cnt, 0]
+        m = self.moments[self.cnt, 1]
+        n = self.moments[self.cnt, 2]
 
         # Unpacking states dictionary
         x = state_dict['x'][-1]
@@ -140,10 +140,11 @@ class simpleDynamics():
         return updated_states
 
 
-    def forward_euler(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt):
+    def forward_euler(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt, cnt):
         
         self.forces  = forces
         self.moments = moments 
+        self.cnt = cnt
 
         # Obtain the rates
         rates = self.compute_rates(state)
@@ -158,10 +159,11 @@ class simpleDynamics():
  
         return state
 
-    def rk4(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt):
+    def rk4(self, state : dict, forces : np.ndarray, moments : np.ndarray, dt, cnt):
         
         self.forces  = forces
         self.moments = moments 
+        self.cnt = cnt
         
         # Call to obtain rates 
         k1rates = self.compute_rates(state)
@@ -172,7 +174,8 @@ class simpleDynamics():
         k3states = self.propagate_dynamics(state, k2rates, dt/2)
         k3rates  = self.compute_rates(k3states)
 
-        k4rates  = self.propagate_dynamics(state, k3rates, dt)
+        k4states  = self.propagate_dynamics(state, k3rates, dt)
+        k4rates   = self.compute_rates(k4states)
 
         # Compute next time step
         for key in state.keys():
