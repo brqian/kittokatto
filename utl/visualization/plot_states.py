@@ -2,6 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.animation import FuncAnimation
 
 from mpl_toolkits.mplot3d import Axes3D
 from utl.coordinate_transforms import *
@@ -84,7 +85,7 @@ def plot_states(*args):
     plt.show()
 
 
-def plot3d(origin : np.ndarray, coord_frames : list, simDict : dict):
+def plot3danimation(name : str, origin : np.ndarray, coord_frames : list, simDict : dict):
     '''
     This function will plot the different coordinate axes of the vehicle
 
@@ -110,48 +111,66 @@ def plot3d(origin : np.ndarray, coord_frames : list, simDict : dict):
     ALL ARGUMENTS MUST BE FOR THE SAME LENGTH OF TIME!!!!
     '''
     
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-
-    # Make the inertial NED coordinate: X = 1.0, Y = 1.0, Z = -1.0; Origin = 0.0
-    X = origin[0]; Y = origin[1]; Z = origin[2]
-    U = 1.0; V = 1.0; W = -1.0
-
-    ax.set_xlim3d(X-2.0, X+2.0)
-    ax.set_ylim3d(Y-2.0, Y+2.0)
-    ax.set_zlim3d(Z-2.0, Z+2.0)
-
-
-    ax.quiver(X, Y, Z, U, 0.0, 0.0, color='g', label='Inertial X')
-    ax.quiver(X, Y, Z, 0.0, V, 0.0, color='b', label='Inertial Y')
-    ax.quiver(X, Y, Z, 0.0, 0.0, W, color='r', label='Inertial Z')
-    
-    
-    xVec_v = np.array([1.0, 0.0, 0.0])
-    yVec_v = np.array([0.0, 1.0, 0.0])
-    zVec_v = np.array([0.0, 0.0, -1.0])
-
     for coord_frame in coord_frames:
 
         if coord_frame == 'Vehicle-1':
-            yaw = simDict['states']['psi'][10]    # psi == yaw
-            dcm = dcm_vehicle_vehicle1(yaw)
+            fig, ax = plt.subplots(subplot_kw=dict(projection="3d"))
 
-            xVec_v1 = dcm @ xVec_v
-            yVec_v1 = dcm @ yVec_v
-            zVec_v1 = dcm @ zVec_v
+            # Make the inertial NED coordinate: X = 1.0, Y = 1.0, Z = -1.0; Origin = 0.0
+            X = origin[0]; Y = origin[1]; Z = origin[2]
+            U = 1.0; V = 1.0; W = -1.0
 
-            ax.quiver(X, Y, Z, xVec_v1[0], xVec_v1[1], xVec_v1[2], color='g', linestyle='dashed', label='Vehicle-1 X')
-            ax.quiver(X, Y, Z, yVec_v1[0], yVec_v1[1], yVec_v1[2], color='b', linestyle='dashed', label='Vehicle-1 Y')
-            ax.quiver(X, Y, Z, zVec_v1[0], zVec_v1[1], zVec_v1[2], color='r', linestyle='dashed', label='Vehicle-1 Z')
+            yaw = simDict['states']['psi']    # psi == yaw, first input
 
-
+            def update_quiver(yaw, ax, X, Y, Z):
+                ax.cla()
+                ax.set_xlim3d(X-1.0, X+1.0)
+                ax.set_ylim3d(Y-1.0, Y+1.0)
+                ax.set_zlim3d(Z-1.0, Z+1.0)
+                ax.quiver(X, Y, Z, U, 0.0, 0.0, color='g', label='Inertial X')
+                ax.quiver(X, Y, Z, 0.0, V, 0.0, color='b', label='Inertial Y')
+                ax.quiver(X, Y, Z, 0.0, 0.0, W, color='r', label='Inertial Z')
+                quiver_v1_X = ax.quiver(*get_quiver_v1_x(yaw), color='g', linestyle='dashed')
+                quiver_v1_Y = ax.quiver(*get_quiver_v1_y(yaw), color='b', linestyle='dashed')
+                quiver_v1_Z = ax.quiver(*get_quiver_v1_z(yaw), color='r', linestyle='dashed')
+                text = ax.text(0, 0, 1, '', weight="bold")
+                text.set_text("Yaw: " + str(round(yaw,3)) + " rad")
+                ax.legend()
+                
+            ani_v1_x = FuncAnimation(fig, update_quiver, frames=yaw[1:], fargs=(ax, X, Y, Z), interval=200, blit=True, repeat=True)
+            animationName = "./" + name + ".gif"
+            ani_v1_x.save(animationName,fps=10)
+            plt.show()
+            
         elif coord_frame == 'Vehicle-2':
+
+            fig, ax = plt.subplots(subplot_kw=dict(projection="3d"))
+
+            # Make the inertial NED coordinate: X = 1.0, Y = 1.0, Z = -1.0; Origin = 0.0
+            X = origin[0]; Y = origin[1]; Z = origin[2]
+            U = 1.0; V = 1.0; W = -1.0
+
             yaw = simDict['states']['yaw']
             pitch = simDict['states']['pitch']
+
+            def update_quiver(yaw, ax, X, Y, Z):
+                ax.cla()
+                ax.set_xlim3d(X-1.0, X+1.0)
+                ax.set_ylim3d(Y-1.0, Y+1.0)
+                ax.set_zlim3d(Z-1.0, Z+1.0)
+                ax.quiver(X, Y, Z, U, 0.0, 0.0, color='g', label='Inertial X')
+                ax.quiver(X, Y, Z, 0.0, V, 0.0, color='b', label='Inertial Y')
+                ax.quiver(X, Y, Z, 0.0, 0.0, W, color='r', label='Inertial Z')
+                quiver_v1_X = ax.quiver(*get_quiver_v1_x(yaw), color='g', linestyle='dashed')
+                quiver_v1_Y = ax.quiver(*get_quiver_v1_y(yaw), color='b', linestyle='dashed')
+                quiver_v1_Z = ax.quiver(*get_quiver_v1_z(yaw), color='r', linestyle='dashed')
+                text = ax.text(0, 0, 1, '', weight="bold")
+                text.set_text("Yaw: " + str(round(yaw,3)) + " rad")
+                ax.legend()
+
             v_to_v1  = dcm_vehicle_vehicle1(yaw)
             v1_to_v2 = dcm_vehicle1_vehicle2(pitch)
-
+            ani_v1_x = FuncAnimation(fig, update_quiver, frames=yaw[1:], fargs=(ax, X, Y, Z), interval=200, blit=True, repeat=True)
             
         elif coord_frame == 'Body':
             yaw   = simDict['states']['yaw']
@@ -169,9 +188,95 @@ def plot3d(origin : np.ndarray, coord_frames : list, simDict : dict):
     
 
 
-    ax.legend()
+   
+def get_quiver_v1_x(yaw):
+    dcm = dcm_vehicle_vehicle1(yaw)
+    xVec_v = np.array([1.0, 0.0, 0.0])
 
-    plt.show()
+    xVec_v1 = dcm @ xVec_v
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    u = xVec_v1[0]
+    v = xVec_v1[1]
+    w = xVec_v1[2]
+
+    return x,y,z,u,v,w
+
+def get_quiver_v1_y(yaw):
+    dcm = dcm_vehicle_vehicle1(yaw)
+    yVec_v = np.array([0.0, 1.0, 0.0])
+
+    yVec_v1 = dcm @ yVec_v
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    u = yVec_v1[0]
+    v = yVec_v1[1]
+    w = yVec_v1[2]
+
+    return x,y,z,u,v,w
+
+def get_quiver_v1_z(yaw):
+    dcm = dcm_vehicle_vehicle1(yaw)
+    zVec_v = np.array([0.0, 0.0, -1.0])
+
+    zVec_v1 = dcm @ zVec_v
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    u = zVec_v1[0]
+    v = zVec_v1[1]
+    w = zVec_v1[2]
+
+    return x,y,z,u,v,w
+    
+
+def get_quiver_v1_x(yaw, theta):
+    dcm_v_v1  = dcm_vehicle_vehicle1(yaw)
+    dcm_v1_v2 = dcm_vehicle1_vehicle2(theta)
+
+    xVec_v = np.array([1.0, 0.0, 0.0])
+
+    xVec_v1 = dcm_v1_v2 @ dcm_v_v1 @ xVec_v
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    u = xVec_v1[0]
+    v = xVec_v1[1]
+    w = xVec_v1[2]
+
+    return x,y,z,u,v,w
+
+def get_quiver_v1_y(yaw, theta):
+    dcm = dcm_vehicle_vehicle1(yaw)
+    yVec_v = np.array([0.0, 1.0, 0.0])
+
+    yVec_v1 = dcm @ yVec_v
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    u = yVec_v1[0]
+    v = yVec_v1[1]
+    w = yVec_v1[2]
+
+    return x,y,z,u,v,w
+
+def get_quiver_v1_z(yaw, theta):
+    dcm = dcm_vehicle_vehicle1(yaw)
+    zVec_v = np.array([0.0, 0.0, -1.0])
+
+    zVec_v1 = dcm @ zVec_v
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    u = zVec_v1[0]
+    v = zVec_v1[1]
+    w = zVec_v1[2]
+
+    return x,y,z,u,v,w
+    
+
 
 # def update_quiver(num, Q, X, Y):
     

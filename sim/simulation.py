@@ -1,6 +1,6 @@
 import numpy as np
 
-from utl.visualization.plot_states import plot_states, plot3d
+from utl.visualization.plot_states import plot_states, plot3danimation
 from simpleDynamics import simpleDynamics 
 from constants import *
 
@@ -89,7 +89,7 @@ feplot['name']   = 'fe'
 
 origin = np.array([0.0, 0.0, 0.0])
 
-plot3d(origin, ['Vehicle-1'], rk4plot)
+plot3danimation('test', origin, ['Vehicle-1'], rk4plot)
 
 print('hi')
 
