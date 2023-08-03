@@ -232,7 +232,7 @@ def get_quiver_v1_z(yaw):
     return x,y,z,u,v,w
     
 
-def get_quiver_v1_x(yaw, theta):
+def get_quiver_v2_v1(yaw, theta):
     dcm_v_v1  = dcm_vehicle_vehicle1(yaw)
     dcm_v1_v2 = dcm_vehicle1_vehicle2(theta)
 
@@ -248,11 +248,12 @@ def get_quiver_v1_x(yaw, theta):
 
     return x,y,z,u,v,w
 
-def get_quiver_v1_y(yaw, theta):
-    dcm = dcm_vehicle_vehicle1(yaw)
+def get_quiver_v2_v1(yaw, theta):
+    dcm_v_v1  = dcm_vehicle_vehicle1(yaw)
+    dcm_v1_v2 = dcm_vehicle1_vehicle2(theta)
     yVec_v = np.array([0.0, 1.0, 0.0])
 
-    yVec_v1 = dcm @ yVec_v
+    yVec_v1 = dcm_v1_v2 @ dcm_v_v1 @ yVec_v
     x = 0.0
     y = 0.0
     z = 0.0
@@ -262,11 +263,12 @@ def get_quiver_v1_y(yaw, theta):
 
     return x,y,z,u,v,w
 
-def get_quiver_v1_z(yaw, theta):
-    dcm = dcm_vehicle_vehicle1(yaw)
+def get_quiver_v2_v1(yaw, theta):
+    dcm_v_v1  = dcm_vehicle_vehicle1(yaw)
+    dcm_v1_v2 = dcm_vehicle1_vehicle2(theta)
     zVec_v = np.array([0.0, 0.0, -1.0])
 
-    zVec_v1 = dcm @ zVec_v
+    zVec_v1 = dcm_v1_v2 @ dcm_v_v1 @ zVec_v
     x = 0.0
     y = 0.0
     z = 0.0
